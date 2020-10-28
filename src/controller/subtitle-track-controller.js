@@ -2,6 +2,7 @@ import Event from '../events';
 import EventHandler from '../event-handler';
 import { logger } from '../utils/logger';
 import { computeReloadInterval } from './level-helper';
+import { clearCurrentCues } from '../utils/texttrack-utils';
 
 class SubtitleTrackController extends EventHandler {
   constructor (hls) {
@@ -70,7 +71,13 @@ class SubtitleTrackController extends EventHandler {
       this.queuedDefaultTrack = this.subtitleTrack;
     }
 
-    this.trackId = -1;
+    const textTracks = filterSubtitleTracks(this.media.textTracks);
+    // Clear loaded cues on media detachment from tracks
+    textTracks.forEach((track) => {
+      clearCurrentCues(track);
+    });
+    // Disable all subtitle tracks before detachment so when reattached only tracks in that content are enabled.
+    this.subtitleTrack = -1;
     this.media = null;
   }
 
@@ -107,7 +114,7 @@ class SubtitleTrackController extends EventHandler {
     }
 
     logger.log(`subtitle track ${id} loaded`);
-    if (details.live) {
+    if (details.live && !this.stopped) {
       const reloadInterval = computeReloadInterval(currentTrack.details, details, data.stats.trequest);
       logger.log(`Reloading live subtitle playlist in ${reloadInterval}ms`);
       this.timer = setTimeout(() => {
@@ -156,7 +163,7 @@ class SubtitleTrackController extends EventHandler {
   _loadCurrentTrack () {
     const { trackId, tracks, hls } = this;
     const currentTrack = tracks[trackId];
-    if (trackId < 0 || !currentTrack || (currentTrack.details && !currentTrack.details.live)) {
+    if (this.stopped || trackId < 0 || !currentTrack || (currentTrack.details && !currentTrack.details.live)) {
       return;
     }
     logger.log(`Loading subtitle track ${trackId}`);
@@ -213,7 +220,7 @@ class SubtitleTrackController extends EventHandler {
 
   _onTextTracksChanged () {
     // Media is undefined when switching streams via loadSource()
-    if (!this.media) {
+    if (!this.media || !this.hls.config.renderTextTracksNatively) {
       return;
     }
 
