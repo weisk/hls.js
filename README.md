@@ -6,6 +6,9 @@
 
 [![](https://www.netlify.com/img/global/badges/netlify-color-accent.svg)](https://www.netlify.com)
 
+You can clone and deploy this sample project with one click:
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/weisk/hls.js&stack=cms)
+
 Join the discussion via [video-dev.org](https://video-dev.org) in #hlsjs (our Slack channel)
 
 # ![hls.js](https://cloud.githubusercontent.com/assets/616833/19739063/e10be95a-9bb9-11e6-8100-2896f8500138.png)
